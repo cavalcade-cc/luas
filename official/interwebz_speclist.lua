@@ -4,16 +4,17 @@ local table = require('table')
 -- change to match if need be
 -- maybe use FFI to rely on shell to give us windows path instead
 -- anyway if this fails it's not gonna draw text so it's gonna be pretty evident
-local tahoma = Font.new('C:\\Windows\\Fonts\\tahoma.ttf', 32, FontStyle.BITMAP_ALIASED, false)
-local tahoma_bold = Font.new('C:\\Windows\\Fonts\\tahomabd.ttf', 32, FontStyle.BITMAP_ALIASED, false)
+local tahoma = Font.new('C:\\Windows\\Fonts\\tahoma.ttf', 12, FontStyle.BITMAP_ALIASED, false)
+local tahoma_bold = Font.new('C:\\Windows\\Fonts\\tahomabd.ttf', 10, FontStyle.BITMAP_ALIASED, false)
 
 local accent_color = Color.new(0x485a7dff)
-local main_color = Color.new(0x252525ff)
-local contrast_color = Color.new(0x212121ff)
-local outline_color = Color.new(0x454447ff)
+local header_color = Color.new(0x393939ff)
+local entry_color = Color.new(0x444444ff)
+local contrast_color = Color.new(0x292929ff)
+local outline_color = Color.new(0x545454ff)
 
-local header_height = 25
-local entry_height = 25
+local header_height = 20
+local entry_height = 20
 
 -- x padding between ends for spectators
 local padding = 5
@@ -27,10 +28,10 @@ local dragging = false
 local default_max_w = 300
 
 function outline_text(x, y, text, font, size, color)
-    g_Render.Text(x-1, y, text, font, size, Color.new(0xff))
-    g_Render.Text(x, y-1, text, font, size, Color.new(0xff))
-    g_Render.Text(x+1, y, text, font, size, Color.new(0xff))
-    g_Render.Text(x, y+1, text, font, size, Color.new(0xff))
+    g_Render.Text(x-1.0, y, text, font, size, Color.new(0xff))
+    g_Render.Text(x, y-1.0, text, font, size, Color.new(0xff))
+    g_Render.Text(x+1.0, y, text, font, size, Color.new(0xff))
+    g_Render.Text(x, y+1.0, text, font, size, Color.new(0xff))
     g_Render.Text(x, y, text, font, size, color)
 end
 
@@ -49,9 +50,9 @@ function speclist(w)
             local observer_info = g_EngineClient:GetPlayerInfo(player:GetRef():GetIndex())
             
             table.insert(strings, {observer_info.m_Name .. ' -> ' .. observed_info.m_Name, g_Local:GetRef() and target:GetIndex() == g_Local:GetRef():GetIndex()})
-            local size = tahoma_bold:GetTextSize(strings[#strings][1], 5.5)
+            local size = tahoma_bold:GetTextSize(strings[#strings][1], 5)
             if (size.m_X > w) then
-                w = size.m_X + padding*2
+                w = size.m_X + padding*2.0
             end
         end
     end)
@@ -73,31 +74,31 @@ function speclist(w)
 
     -- header
     local quad = {Pair.new(x, y + header_height), Pair.new(x + w*0.05, y), Pair.new(x + w + w*0.05, y), Pair.new(x + w, y + header_height)}
-    g_Render.PolyFill(quad, main_color)
-    table.insert(quad, Pair.new(x, y + header_height))
+    g_Render.PolyFill(quad, header_color)
+    table.insert(quad, quad[1])
     g_Render.PolyLine(quad, 1, outline_color)
 
-    local size = tahoma:GetTextSize('SPECTATOR LIST', 6.5)
-    outline_text(x + w / 2 - size.m_X / 2, y + header_height / 2 - size.m_Y / 2, 'SPECTATOR LIST', tahoma, 6.5, accent_color)
+    local size = tahoma:GetTextSize('SPECTATOR LIST', 6)
+    outline_text(x + w / 2 - size.m_X / 2, y + header_height / 2 - 3, 'SPECTATOR LIST', tahoma, 6, accent_color)
 
     -- draw spectators
     for i = 1, #strings, 1
     do
-        local contrast = (i % 2) == 0
-        local color = main_color
+        local contrast = (i % 2) ~= 0
+        local color = entry_color
         if (contrast) then
             color = contrast_color
         end
 
-        g_Render.RectFill(x, y + i * header_height, w, entry_height, 0, color)
+        g_Render.RectFill(x, y + header_height + (i - 1) * entry_height, w, entry_height, 0, color)
 
         color = Color.new(0xffffffff)
         if (strings[i][2]) then
             color = accent_color
         end
 
-        local size = tahoma_bold:GetTextSize(strings[i][1], 5.5)
-        outline_text(x + padding, y + i * header_height + header_height / 2 - size.m_Y / 2, strings[i][1], tahoma_bold, 5.5, color)
+        local size = tahoma_bold:GetTextSize(strings[i][1], 5)
+        outline_text(x + padding, y + header_height + (i - 1) * entry_height + entry_height / 2 - size.m_Y / 2, strings[i][1], tahoma_bold, 5, color)
     end
 
     -- outline spectators part
